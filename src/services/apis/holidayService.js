@@ -1,15 +1,21 @@
-import axiosInstance from "../axiosInstance";
+import { mockHolidays, simulateDelay } from "../../data/mockData";
 
-export const fetchHolidaysAPI = (year, page, size) => {
-  return axiosInstance.get(`/company/holidays`, {
-    params: {
-      year,
-      page,
-      size,
-    },
-  });
+export const fetchHolidaysAPI = async (year, page, size) => {
+  await simulateDelay();
+  // Ignore year filter for simplicity in mock
+  return {
+    data: {
+      data: {
+        holidays: mockHolidays,
+        totalElements: mockHolidays.length
+      }
+    }
+  };
 };
 
-export const createHolidayAPI = (holidayData) => {
-  return axiosInstance.post(`/company/holidays`, holidayData);
+export const createHolidayAPI = async (holidayData) => {
+  await simulateDelay();
+  const newHoliday = { ...holidayData, id_holiday: Math.floor(Math.random() * 1000) };
+  mockHolidays.push(newHoliday);
+  return { data: newHoliday };
 };

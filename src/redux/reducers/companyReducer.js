@@ -34,6 +34,13 @@ export const updateCompanyLogoPending = (state) => {
   state.updateSuccess = false;
 };
 
+// --- BAGIAN YANG DITAMBAHKAN (FIX ERROR) ---
+export const updateCompanyLogoFulfilled = (state, action) => {
+  state.loading = false;
+  state.updateSuccess = true;
+  state.updateError = null;
+};
+// -------------------------------------------
 
 export const updateCompanyLogoRejected = (state, action) => {
   state.loading = false;

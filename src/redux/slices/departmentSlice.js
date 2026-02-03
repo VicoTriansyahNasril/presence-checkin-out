@@ -34,14 +34,16 @@ export const fetchAllDepartments = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await getDepartmentDetailsByCompanyId();
-      console.log("Fetched department details", response);
 
-      if (!response || !Array.isArray(response)) {
+      // PERBAIKAN DISINI: Ambil .data jika response berupa object
+      const departmentsData = response.data || response;
+
+      if (!departmentsData || !Array.isArray(departmentsData)) {
         throw new Error("Expected an array of departments in response");
       }
 
       // Transform data if necessary
-      const transformedResponse = response.map((department) => ({
+      const transformedResponse = departmentsData.map((department) => ({
         id: department.idDepartment,
         name: department.departmentName,
         topEmployees: department.topEmployees,
@@ -70,7 +72,6 @@ export const fetchEmployeesByDepartment = createAsyncThunk(
         idDepartment,
         paginationModel
       );
-      console.log("Fetched employees by department response:", response);
       return response.data; // Pastikan API mengembalikan objek yang benar
     } catch (error) {
       console.error("Error in fetchEmployeesByDepartment thunk:", error);
@@ -79,16 +80,13 @@ export const fetchEmployeesByDepartment = createAsyncThunk(
   }
 );
 
-
-
 // Async action to add a department
 export const addDepartment = createAsyncThunk(
   "departments/addDepartment",
   async (departmentName, { rejectWithValue }) => {
     try {
       const response = await addDepartmentAPI(departmentName);
-      console.log("Department added:", response);
-      return response.data; // Pastikan data ini sesuai dengan yang Anda butuhkan
+      return response.data;
     } catch (error) {
       console.error("Error adding department:", error);
       return rejectWithValue(error.message);
@@ -101,14 +99,13 @@ export const editDepartment = createAsyncThunk(
   async ({ idDepartment, departmentName }, { rejectWithValue }) => {
     try {
       const response = await editDepartmentAPI(idDepartment, departmentName);
-      console.log("Department edited response:", response);
 
       return {
-        id: idDepartment, // ID yang kita kirim
-        department_name: departmentName, // Nama yang kita update
-        message: response.message, // Pesan dari respons
-        statusCode: response.statusCode, // Status kode dari respons
-        status: response.status, // Status dari respons
+        id: idDepartment,
+        department_name: departmentName,
+        message: response.message,
+        statusCode: response.statusCode,
+        status: response.status,
       };
     } catch (error) {
       console.error("Error editing department:", error);
@@ -122,13 +119,12 @@ export const deleteDepartment = createAsyncThunk(
   async (idDepartment, { rejectWithValue }) => {
     try {
       const response = await deleteDepartmentAPI(idDepartment);
-      console.log("Department deleted response:", response);
 
       return {
-        id: idDepartment, // ID yang dihapus
-        message: response.message, // Pesan dari respons
-        statusCode: response.statusCode, // Status kode dari respons
-        status: response.status, // Status dari respons
+        id: idDepartment,
+        message: response.message,
+        statusCode: response.statusCode,
+        status: response.status,
       };
     } catch (error) {
       console.error("Error deleting department:", error);
@@ -143,8 +139,7 @@ export const importDepartment = createAsyncThunk(
   async (file, { rejectWithValue }) => {
     try {
       const response = await importDepartmentAPI(file);
-      console.log("Departments imported:", response);
-      return response.data; // Pastikan data ini sesuai dengan yang Anda butuhkan
+      return response.data;
     } catch (error) {
       console.error("Error importing departments:", error);
       return rejectWithValue(error.message);

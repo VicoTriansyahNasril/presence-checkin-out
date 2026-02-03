@@ -2,9 +2,9 @@ import React, { useEffect, lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAdmin } from "../redux/slices/adminSlice"; // Import action untuk fetch admin data
+import { fetchAdmin } from "../redux/slices/adminSlice";
 import { Box } from "@mui/material";
-import CustomLoader from "../components/Elements/CustomLoader"; // CustomLoader untuk fallback
+import CustomLoader from "../components/Elements/CustomLoader";
 
 // Lazy loading untuk komponen
 const Administrators = lazy(() => import("./Administators"));
@@ -21,50 +21,48 @@ const EmployeeDetails = lazy(() => import("./Employees/EmployeeDetail"));
 const Holidays = lazy(() => import("./Holidays"));
 const Leaves = lazy(() => import("./Leaves"));
 const Settings = lazy(() => import("./Settings"));
-const DashboardSuperadmin = lazy(() =>
-  import("./Dashboard/DashboardSuperadmin")
-);
+const DashboardSuperadmin = lazy(() => import("./Dashboard/DashboardSuperadmin"));
 const PrivateRoute = lazy(() => import("./PrivateRoute"));
-const AdminSidebar = lazy(() =>
-  import("../components/Navigation/AdminSidebar")
-);
-const SuperadminSidebar = lazy(() =>
-  import("../components/Navigation/SuperadminSidebar")
-);
-const Header = lazy(() => import("../components/Header")); // Menggunakan Header yang sama untuk Admin & Superadmin
+const AdminSidebar = lazy(() => import("../components/Navigation/AdminSidebar"));
+const SuperadminSidebar = lazy(() => import("../components/Navigation/SuperadminSidebar"));
+const Header = lazy(() => import("../components/Header"));
 
 const CompaniesList = lazy(() => import("./Companies"));
 
 const Pages = () => {
-  const { isAuthenticated, user, loading } = useAuth();
-  const [userRole, setUserRole] = React.useState("");
-  const [adminId, setAdminId] = React.useState("");
-  const [storedUser, setStoredUser] = React.useState();
+  const { isAuthenticated, user, loading: authLoading } = useAuth(); // Rename loading jadi authLoading
   const location = useLocation();
   const dispatch = useDispatch();
 
   const adminData = useSelector((state) => state.admin.data);
+  // Tambahkan state loading dari admin slice
+  const adminLoading = useSelector((state) => state.admin.loading);
+
   const isPublicRoute = location.pathname === "/login";
 
-  // Fetch admin or superadmin data based on role
+  // Fetch admin data based on role
   useEffect(() => {
-    setStoredUser(JSON.parse(localStorage.getItem("user")));
-    setAdminId(storedUser?.id_admin);
-    setUserRole(storedUser?.role);
-
-    if (isAuthenticated && adminId) {
-      if (userRole === "Admin") {
-        dispatch(fetchAdmin(adminId));
-      } else if (userRole === "Superadmin") {
-        // Logic for fetching superadmin (you will implement fetchSuperAdmin)
-        // dispatch(fetchSuperAdmin());
+    // Kita gunakan user dari context langsung, tidak perlu parsing localStorage lagi
+    if (isAuthenticated && user) {
+      if (user.role === "Admin" && !adminData) {
+        // Hanya fetch jika data belum ada
+        dispatch(fetchAdmin(user.id_admin));
       }
+      // else if (user.role === "Superadmin") { ... }
     }
-  }, [dispatch, isAuthenticated, userRole]);
+  }, [dispatch, isAuthenticated, user, adminData]);
 
-  // Jika masih dalam proses loading, tampilkan spinner
-  if (loading || (!adminData && user?.role === "Admin")) {
-    return <CustomLoader loading={loading} />;
+  // LOGIKA LOADER DIPERBAIKI:
+  // Tampilkan loader jika:
+  // 1. Auth sedang memproses (authLoading)
+  // 2. User adalah Admin TAPI data admin belum siap (sedang fetch atau null)
+  const shouldShowLoader =
+    authLoading ||
+    (isAuthenticated && user?.role === "Admin" && !adminData);
+
+  if (shouldShowLoader) {
+    // Paksa loading={true} agar spinner muncul
+    return <CustomLoader loading={true} />;
   }
 
   // Redirect ke dashboard jika pengguna sudah login dan mencoba mengakses halaman login
@@ -103,7 +101,7 @@ const Pages = () => {
               element={
                 <PrivateRoute
                   isAuthenticated={isAuthenticated}
-                  loading={loading}
+                  loading={authLoading}
                 >
                   {user?.role === "Superadmin" ? (
                     <DashboardSuperadmin />
@@ -118,7 +116,7 @@ const Pages = () => {
               element={
                 <PrivateRoute
                   isAuthenticated={isAuthenticated}
-                  loading={loading}
+                  loading={authLoading}
                 >
                   <Administrators />
                 </PrivateRoute>
@@ -137,7 +135,7 @@ const Pages = () => {
               element={
                 <PrivateRoute
                   isAuthenticated={isAuthenticated}
-                  loading={loading}
+                  loading={authLoading}
                 >
                   <Attendances />
                 </PrivateRoute>
@@ -148,7 +146,7 @@ const Pages = () => {
               element={
                 <PrivateRoute
                   isAuthenticated={isAuthenticated}
-                  loading={loading}
+                  loading={authLoading}
                 >
                   <CompanyProfile />
                 </PrivateRoute>
@@ -160,7 +158,7 @@ const Pages = () => {
               element={
                 <PrivateRoute
                   isAuthenticated={isAuthenticated}
-                  loading={loading}
+                  loading={authLoading}
                 >
                   <Routes>
                     <Route path="" element={<Departments />} />
@@ -179,7 +177,7 @@ const Pages = () => {
               element={
                 <PrivateRoute
                   isAuthenticated={isAuthenticated}
-                  loading={loading}
+                  loading={authLoading}
                 >
                   <Routes>
                     <Route path="" element={<Employees />} />
@@ -197,7 +195,7 @@ const Pages = () => {
               element={
                 <PrivateRoute
                   isAuthenticated={isAuthenticated}
-                  loading={loading}
+                  loading={authLoading}
                 >
                   <Holidays />
                 </PrivateRoute>
@@ -208,7 +206,7 @@ const Pages = () => {
               element={
                 <PrivateRoute
                   isAuthenticated={isAuthenticated}
-                  loading={loading}
+                  loading={authLoading}
                 >
                   <Leaves />
                 </PrivateRoute>
@@ -219,7 +217,7 @@ const Pages = () => {
               element={
                 <PrivateRoute
                   isAuthenticated={isAuthenticated}
-                  loading={loading}
+                  loading={authLoading}
                 >
                   <Settings />
                 </PrivateRoute>
@@ -230,7 +228,7 @@ const Pages = () => {
               element={
                 <PrivateRoute
                   isAuthenticated={isAuthenticated}
-                  loading={loading}
+                  loading={authLoading}
                 >
                   <AdminProfile />
                 </PrivateRoute>
@@ -241,7 +239,7 @@ const Pages = () => {
               element={
                 <PrivateRoute
                   isAuthenticated={isAuthenticated}
-                  loading={loading}
+                  loading={authLoading}
                 >
                   <CompanyProfile />
                 </PrivateRoute>
@@ -252,7 +250,7 @@ const Pages = () => {
               element={
                 <PrivateRoute
                   isAuthenticated={isAuthenticated}
-                  loading={loading}
+                  loading={authLoading}
                 >
                   <CompaniesList />
                 </PrivateRoute>

@@ -1,144 +1,98 @@
-import axiosInstance from "../axiosInstance";
+import { mockDepartments, mockEmployees, simulateDelay } from "../../data/mockData";
 
-// Function to get departments by company
 export const getDepartmentByCompany = async () => {
-  try {
-    const response = await axiosInstance.get("/company/department");
-    if (response.data && response.data.statusCode === 200) {
-      return response.data.data; // Return the list of departments
-    } else {
-      throw new Error("Failed to retrieve departments");
-    }
-  } catch (error) {
-    console.error("Error fetching departments:", error);
-    throw error;
-  }
+  await simulateDelay();
+  return { statusCode: 200, data: mockDepartments };
 };
 
-// Function to get department details by company ID
 export const getDepartmentDetailsByCompanyId = async () => {
-  try {
-    const response = await axiosInstance.get("/company/department/details");
-    if (response.data && response.data.statusCode === 200) {
-      return response.data.data; // Return the department details
-    } else {
-      throw new Error("Failed to retrieve department details");
-    }
-  } catch (error) {
-    console.error("Error fetching department details:", error);
-    throw error;
-  }
-};
+  await simulateDelay();
 
-// Fungsi untuk menambah department
-export const addDepartment = async (departmentName) => {
-  const response = await axiosInstance.post("/admin/department/add", {
-    department_name: departmentName,
+  // Transform data to match UI expectations (top employees, etc.)
+  const enrichedDepartments = mockDepartments.map(dept => {
+    const deptEmployees = mockEmployees.filter(e => e.id_department === dept.id);
+    return {
+      idDepartment: dept.id,
+      departmentName: dept.name,
+      totalEmployees: deptEmployees.length,
+      topEmployees: deptEmployees.slice(0, 3).map(e => ({
+        name: e.employeeName,
+        position: e.roleCurrentCompany,
+        profilePicture: e.profilePicture,
+        username: e.username
+      }))
+    };
   });
-  return response.data;
+
+  return { statusCode: 200, data: enrichedDepartments };
 };
 
-// Fungsi untuk mengimpor department dari file
-export const importDepartment = async (file) => {
-  if (!file) {
-    throw new Error("No file selected for import");
-  }
+export const addDepartment = async (departmentName) => {
+  await simulateDelay();
+  const newDept = {
+    id: Math.floor(Math.random() * 1000),
+    name: departmentName,
+    totalEmployees: 0,
+    topEmployees: []
+  };
+  mockDepartments.push(newDept);
 
-  const formData = new FormData();
-  formData.append("file", file);
-
-  console.log("FormData to be sent:", formData.get("file")); // Pastikan file benar-benar ada di FormData
-
-  const response = await axiosInstance.post(
-    "/admin/department/import",
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+  // Return format expected by reducer
+  return {
+    data: {
+      id: newDept.id,
+      name: newDept.name,
+      totalEmployees: 0,
+      topEmployees: []
     }
-  );
-  return response.data;
+  };
 };
 
-export const getEmployeesByDepartmentId = async (
-  idDepartment,
-  paginationModel = { page: 0, pageSize: 10 } // Berikan nilai default
-) => {
-  try {
-    const { page, pageSize } = paginationModel;
-    const response = await axiosInstance.get(
-      `/admin/department/${idDepartment}/employees`,
-      { params: { page, size: pageSize } }
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching employees by department:", error);
-    throw error;
-  }
+export const importDepartment = async (file) => {
+  await simulateDelay();
+  return { message: "Import successful (Mock)", data: [] };
 };
 
-// Fungsi untuk mengedit department
+export const getEmployeesByDepartmentId = async (idDepartment, paginationModel) => {
+  await simulateDelay();
+  const { page, pageSize } = paginationModel;
+
+  const filtered = mockEmployees.filter(e => e.id_department === parseInt(idDepartment));
+  const start = page * pageSize;
+  const end = start + pageSize;
+
+  return {
+    data: filtered.slice(start, end),
+    total_data: filtered.length
+  };
+};
+
 export const editDepartment = async (idDepartment, departmentName) => {
-  try {
-    const response = await axiosInstance.patch(
-      `/admin/department/${idDepartment}/edit-department`,
-      {
-        department_name: departmentName,
-      }
-    );
+  await simulateDelay();
+  const dept = mockDepartments.find(d => d.id === parseInt(idDepartment));
+  if (dept) dept.name = departmentName;
 
-    // Cetak respons untuk debugging
-    console.log("editDepartmentAPI response:", response.data);
-
-    // Tidak perlu validasi ID di sini
-    return response.data; // Return the response data as it is
-  } catch (error) {
-    console.error("editDepartmentAPI error:", error);
-    throw error;
-  }
+  return {
+    message: "Department edited",
+    statusCode: 200,
+    status: "Success"
+  };
 };
 
-// Fungsi untuk menghapus department
 export const deleteDepartment = async (idDepartment) => {
-  try {
-    const response = await axiosInstance.patch(
-      `/admin/department/${idDepartment}/delete-department`
-    );
+  await simulateDelay();
+  const index = mockDepartments.findIndex(d => d.id === parseInt(idDepartment));
+  if (index !== -1) mockDepartments.splice(index, 1);
 
-    // Cetak respons untuk debugging
-    console.log("deleteDepartmentAPI response:", response.data);
-
-    return response.data; // Return the response data as it is
-  } catch (error) {
-    console.error("deleteDepartmentAPI error:", error);
-    throw error;
-  }
+  return {
+    message: "Department deleted",
+    statusCode: 200,
+    status: "Success"
+  };
 };
 
-// Function to export employees to CSV (or Excel)
-export const exportEmployeesByDepartment = async (
-  idDepartment,
-  departmentName
-) => {
-  try {
-    const response = await axiosInstance.get(
-      `admin/company/department/${idDepartment}/employees/export`,
-      {
-        responseType: "blob", // Important for downloading files
-      }
-    );
-
-    // Create a link element, use it to download the file
-    const url = window.URL.createObjectURL(new Blob([response.data]));
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", `employees-list-${departmentName}.xlsx`); // Specify the file name
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  } catch (error) {
-    console.error("Error exporting employees:", error);
-    throw error;
-  }
+export const exportEmployeesByDepartment = async (idDepartment, departmentName) => {
+  await simulateDelay();
+  // Return dummy blob
+  return { data: new Blob(["dummy data"], { type: 'text/csv' }) };
 };

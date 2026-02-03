@@ -1,271 +1,170 @@
-import axiosInstance from "../../services/axiosInstance";
+import { mockEmployees, mockAttendance, mockLeaves, simulateDelay } from "../../data/mockData";
 
-// Fungsi untuk mengambil seluruh data karyawan
-export const getEmployees = async (page = 0, size = 10, keyword) => {
-  try {
-    const response = await axiosInstance.get(
-      `/admin/employee?page=${page}&size=${size}&keyword=${keyword || ""}`
+export const getEmployees = async (page = 0, size = 10, keyword = "") => {
+  await simulateDelay();
+
+  let filtered = mockEmployees;
+  if (keyword) {
+    const lowerKey = keyword.toLowerCase();
+    filtered = filtered.filter(e =>
+      e.employeeName.toLowerCase().includes(lowerKey) ||
+      e.employeeNumber.toLowerCase().includes(lowerKey)
     );
-    if (response.data && response.data.statusCode === 200) {
-      return response.data;
-    } else {
-      throw new Error("Failed to retrieve employees");
-    }
-  } catch (error) {
-    console.error("Error fetching employees: ", error);
-    throw error;
   }
+
+  const start = page * size;
+  const end = start + size;
+
+  return {
+    statusCode: 200,
+    data: filtered.slice(start, end),
+    totalData: filtered.length,
+    totalPage: Math.ceil(filtered.length / size),
+    pageSize: size
+  };
 };
 
-// Fungsi untuk menambahkan karyawan
 export const addEmployee = async (formEmployee) => {
-  try {
-    const response = await axiosInstance.post("/admin/create-employee", {
-      first_name: formEmployee.first_name,
-      last_name: formEmployee.last_name,
-      username: formEmployee.username,
-      password: formEmployee.password,
-      email: formEmployee.email,
-      employee_number: formEmployee.employee_number,
-      id_department: formEmployee.id_department,
-      role_current_company: formEmployee.role_current_company,
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error creating employee: ", error);
-  }
+  await simulateDelay();
+  const newEmp = {
+    ...formEmployee,
+    idEmployee: Math.floor(Math.random() * 10000),
+    employeeName: `${formEmployee.first_name} ${formEmployee.last_name}`,
+    department: { departmentName: "New Department" }, // Mock department name
+    profilePicture: "https://i.pravatar.cc/150" // Mock default picture
+  };
+  mockEmployees.push(newEmp);
+  return { data: newEmp, message: "Employee added successfully" };
 };
 
-// Fungsi untuk mengimport karyawan
 export const importEmployee = async (file) => {
-  if (!file) {
-    throw new Error("No file selected for import");
-  }
-
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const response = await axiosInstance.post(
-    "/admin/import-employees",
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
-  );
-  return response.data;
+  await simulateDelay();
+  return { data: [], message: "Import successful (Mock)" };
 };
 
-// Fungsi untuk mengambil id_employee berdasarkan username
+// --- BAGIAN INI YANG DIMINTA KHUSUS ---
 export const getEmployeeIdByUsername = async (username) => {
-  try {
-    const response = await axiosInstance.get(
-      `/admin/employee/username/${username}`
-    );
-    if (response.data && response.data.statusCode === 200) {
-      return response.data.data;
-    } else {
-      throw new Error("Failed to retrieve employee ID");
-    }
-  } catch (error) {
-    console.error("Error fetching employee ID by username: ", error);
-    throw error;
-  }
-};
+  await simulateDelay();
+  // Pastikan pencocokan username case-insensitive dan trim whitespace
+  const emp = mockEmployees.find(e => e.username.toLowerCase() === username.toLowerCase().trim());
 
-// Fungsi untuk mengambil profil karyawan berdasarkan id_employee
+  if (!emp) {
+    console.error(`Employee with username ${username} not found in mock data.`);
+    throw new Error("Employee not found");
+  }
+
+  return { statusCode: 200, data: emp.idEmployee };
+};
+// --------------------------------------
+
 export const getEmployeeProfileById = async (id_employee) => {
-  try {
-    const response = await axiosInstance.get(
-      `/admin/employee/${id_employee}/profile`
-    );
-    if (response.data && response.data.statusCode === 200) {
-      return response.data;
-    } else {
-      throw new Error("Failed to retrieve employee profile");
-    }
-  } catch (error) {
-    console.error("Error fetching employee profile: ", error);
-    throw error;
-  }
+  await simulateDelay();
+  const emp = mockEmployees.find(e => e.idEmployee === parseInt(id_employee));
+  if (!emp) throw new Error("Employee not found");
+  return { statusCode: 200, data: emp };
 };
 
-// Fungsi untuk mengambil professional information
 export const getEmployeeProfessionalInfo = async (id_employee) => {
-  try {
-    const response = await axiosInstance.get(
-      `/admin/employee/${id_employee}/professional-info`
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching professional information: ", error);
-    throw error;
-  }
+  await simulateDelay();
+  const emp = mockEmployees.find(e => e.idEmployee === parseInt(id_employee));
+
+  if (!emp) throw new Error("Employee not found");
+
+  return {
+    data: {
+      employee_number: emp.employeeNumber,
+      username: emp.username,
+      status: emp.status,
+      email: emp.email,
+      department_name: emp.department?.departmentName || "N/A",
+      role_current_company: emp.role_current_company,
+      role_in_client: emp.role_in_client,
+      joining_date: emp.joining_date
+    }
+  };
 };
 
-// Fungsi untuk mengambil personal information
 export const getEmployeePersonalInfo = async (id_employee) => {
-  try {
-    const response = await axiosInstance.get(
-      `/admin/employee/${id_employee}/personal-info`
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching personal information: ", error);
-    throw error;
-  }
+  await simulateDelay();
+  const emp = mockEmployees.find(e => e.idEmployee === parseInt(id_employee));
+
+  if (!emp) throw new Error("Employee not found");
+
+  return {
+    data: {
+      first_name: emp.first_name,
+      last_name: emp.last_name,
+      date_of_birth: emp.date_of_birth,
+      gender: emp.gender,
+      marital_status: emp.marital_status,
+      mobile_number: emp.mobile_number,
+      nationality: emp.nationality,
+      address: emp.address,
+      province: emp.province,
+      city: emp.city,
+      district: emp.district,
+      zip_code: emp.zip_code
+    }
+  };
 };
 
-// Fungsi untuk mengambil leave berdasarkan id_employee
 export const getEmployeeLeave = async (id_employee) => {
-  try {
-    const { data } = await axiosInstance.get(
-      `/admin/employee/${id_employee}/leaves`
-    );
-    // Return an empty array if the response indicates no data
-    return data?.statusCode === 404 || data?.message === "Leaves not found"
-      ? []
-      : data.data;
-  } catch (error) {
-    console.error("Error get employee leave: ", error);
-    throw error;
-  }
+  await simulateDelay();
+  const emp = mockEmployees.find(e => e.idEmployee === parseInt(id_employee));
+  if (!emp) return { statusCode: 200, data: [] };
+
+  // Mock logic: return leaves where first name matches (simple association for mock)
+  const leaves = mockLeaves.filter(l => l.first_name === emp.first_name);
+  return { statusCode: 200, data: leaves };
 };
 
 export const deleteEmployee = async (id_employee) => {
-  try {
-    const response = await axiosInstance.patch(
-      `/admin/employee/${id_employee}/delete-employee`
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error deleting employee: ", error);
-    throw error;
-  }
+  await simulateDelay();
+  const index = mockEmployees.findIndex(e => e.idEmployee === parseInt(id_employee));
+  if (index !== -1) mockEmployees.splice(index, 1);
+  return { message: "Deleted" };
 };
 
 export const editPersonalEmployee = async (id_employee, formData) => {
-  try {
-    const filteredData = Object.keys(formData).reduce((acc, key) => {
-      if (
-        formData[key] !== null &&
-        formData[key] !== undefined &&
-        formData[key] !== ""
-      ) {
-        acc[key] = formData[key];
-      }
-      return acc;
-    }, {});
-    const response = await axiosInstance.patch(
-      `/admin/employee/${id_employee}/personal-info`,
-      filteredData
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error editing employee: ", error);
-    throw error;
+  await simulateDelay();
+  const index = mockEmployees.findIndex(e => e.idEmployee === parseInt(id_employee));
+  if (index !== -1) {
+    Object.assign(mockEmployees[index], formData);
   }
+  return { message: "Personal info updated", data: mockEmployees[index] };
 };
 
 export const editProfessionalEmployee = async (id_employee, formData) => {
-  try {
-    const filteredData = Object.keys(formData).reduce((acc, key) => {
-      if (
-        formData[key] !== null &&
-        formData[key] !== undefined &&
-        formData[key] !== ""
-      ) {
-        acc[key] = formData[key];
-      }
-      return acc;
-    }, {});
-
-    const response = await axiosInstance.patch(
-      `/admin/employee/${id_employee}/professional-info`,
-      filteredData
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error editing employee: ", error);
-    throw error;
+  await simulateDelay();
+  const index = mockEmployees.findIndex(e => e.idEmployee === parseInt(id_employee));
+  if (index !== -1) {
+    Object.assign(mockEmployees[index], formData);
   }
+  return { message: "Professional info updated", data: mockEmployees[index] };
 };
 
 export const changePassword = async (id_employee, formData) => {
-  try {
-    const response = await axiosInstance.patch(
-      `/admin/employee/${id_employee}/change-password`,
-      {
-        new_password: formData.new_password,
-        retype_new_password: formData.retype_new_password,
-      }
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error editing employee: ", error);
-    throw error;
-  }
+  await simulateDelay();
+  return { message: "Password updated" };
 };
 
 export const getEmployeeAttendanceDetails = async (id_employee) => {
-  try {
-    const { data } = await axiosInstance.get(
-      `/admin/employee/${id_employee}/attendances`
-    );
+  await simulateDelay();
+  const emp = mockEmployees.find(e => e.idEmployee === parseInt(id_employee));
 
-    // Return an empty array if the response indicates no data
-    return data?.statusCode === 404 || data?.message === "Attendances not found"
-      ? []
-      : data.data;
-  } catch (error) {
-    console.error("Error fetching employee attendance details: ", error);
-    throw error;
-  }
+  if (!emp) return { statusCode: 200, data: [] };
+
+  // Return attendance matching name
+  const attendance = mockAttendance.filter(a => a.employee_name === emp.employeeName);
+  return { statusCode: 200, data: attendance };
 };
 
-// Function to export employees to CSV (or Excel)
 export const exportEmployeesByCompany = async () => {
-  try {
-    const response = await axiosInstance.get(
-      "/admin/company/employees/export",
-      {
-        responseType: "blob",
-      }
-    );
-
-    const url = window.URL.createObjectURL(new Blob([response.data]));
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", "employees-list-by-company.xlsx");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  } catch (error) {
-    console.error("Error exporting employees:", error);
-    throw error;
-  }
+  await simulateDelay();
+  return { data: new Blob([""], { type: 'text/csv' }) };
 };
 
-// Fungsi untuk mengubah foto profil employee yang dilakukan oleh admin
 export const changeEmployeeProfilePicture = async (id_employee, file) => {
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const response = await axiosInstance.patch(
-      `/admin/employee/${id_employee}/change-profile-picture`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-
-    return response.data;
-  } catch (error) {
-    console.error("Failed to update employee profile picture:", error);
-    throw error;
-  }
+  await simulateDelay();
+  return { message: "Picture updated" };
 };

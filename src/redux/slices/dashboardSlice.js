@@ -1,6 +1,8 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { getTopEmployees, getDashboardSummary, getAttendanceOverview, getDataChartSuperadmin,
-  getDataDashboardSuperadmin,} from '../../services/apis/dashboardService';
+import {
+  getTopEmployees, getDashboardSummary, getAttendanceOverview, getDataChartSuperadmin,
+  getDataDashboardSuperadmin,
+} from '../../services/apis/dashboardService';
 import {
   fetchTopEmployeesPending,
   fetchTopEmployeesFulfilled,
@@ -25,7 +27,8 @@ export const fetchTopEmployees = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await getTopEmployees();
-      return response;
+      // FIX: Kembalikan data langsung jika struktur response {statusCode, data}
+      return response.data || response;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
@@ -38,7 +41,8 @@ export const fetchDashboardSummary = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await getDashboardSummary();
-      return response;
+      // FIX: Kembalikan data langsung
+      return response.data || response;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
@@ -51,7 +55,8 @@ export const fetchAttendanceOverview = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await getAttendanceOverview();
-      return response;
+      // FIX: Kembalikan data langsung
+      return response.data || response;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
@@ -63,7 +68,7 @@ export const fetchDataDashboardSuperadmin = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await getDataDashboardSuperadmin();
-      return response;
+      return response.data || response;
     } catch (error) {
       return rejectWithValue(
         error.response?.data || { message: error.message }
@@ -77,7 +82,7 @@ export const fetchDataChartSuperadmin = createAsyncThunk(
   async ({ startDate, endDate }, { rejectWithValue }) => {
     try {
       const response = await getDataChartSuperadmin(startDate, endDate);
-      return response;
+      return response.data || response;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
@@ -88,8 +93,8 @@ export const fetchDataChartSuperadmin = createAsyncThunk(
 const dashboardSlice = createSlice({
   name: 'dashboard',
   initialState: {
-    data: {}, // u/ data dashboard umum
-  dataChart: [], // u/ data chart (diubah menjadi array)
+    data: {},
+    dataChart: [],
     topEmployees: [],
     summary: null,
     attendanceOverview: null,

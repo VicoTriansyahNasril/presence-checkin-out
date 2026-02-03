@@ -11,8 +11,8 @@ import {
   CustomTypography,
 } from "../../components/Elements";
 import { useAuth } from "../../context/AuthContext";
-import validationSchema from "../../validation/authValidation"; // Import validationSchema dari luar
-import { authConstants } from "../../constants/authConstants"; // Import authConstants untuk asset paths
+import validationSchema from "../../validation/authValidation";
+import { authConstants } from "../../constants/authConstants";
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor:
@@ -37,14 +37,14 @@ const LoginForm = styled(Box)(({ theme }) => ({
 }));
 
 const Login = () => {
-  const { login } = useAuth(); // Tidak perlu ambil loading dari useAuth
+  const { login } = useAuth();
 
   const formik = useFormik({
     initialValues: {
       username: "",
       password: "",
     },
-    validationSchema, // Gunakan validationSchema yang diimport
+    validationSchema,
     onSubmit: async (values) => {
       await login(values.username, values.password);
     },
@@ -59,20 +59,19 @@ const Login = () => {
         justifyContent="center"
         sx={{ minHeight: "100vh" }}
       >
-        <Grid item xs={12} sm={12} md={8} lg={8}>
-          {" "}
-          {/* item boolean */}
+        {/* HAPUS PROP 'item' DI SINI */}
+        <Grid xs={12} sm={12} md={8} lg={8}>
           <Item>
             <img
-              src={authConstants.ASSETS.LOGIN_BG} // Menggunakan path dari authConstants
+              src={authConstants.ASSETS.LOGIN_BG}
               alt="login-bg"
               style={{ width: "80%", height: "auto", margin: 0 }}
             />
           </Item>
         </Grid>
-        <Grid item xs={12} sm={12} md={4} lg={4}>
-          {" "}
-          {/* item boolean */}
+
+        {/* HAPUS PROP 'item' DI SINI JUGA */}
+        <Grid xs={12} sm={12} md={4} lg={4}>
           <LoginForm component="form" onSubmit={formik.handleSubmit}>
             <CustomTypography
               variant="h5"
@@ -132,4 +131,3 @@ const Login = () => {
 };
 
 export default Login;
-  

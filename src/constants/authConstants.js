@@ -1,5 +1,3 @@
-// authConstants.js
-
 export const authConstants = {
   // Keys
   TOKEN_KEY: "token",
@@ -33,4 +31,8 @@ export const authConstants = {
   ICON_ERROR: "error",
   ICON_WARNING: "warning",
 
+  // Assets
+  ASSETS: {
+    LOGIN_BG: "/assets/images/login-bg.png",
+  },
 };

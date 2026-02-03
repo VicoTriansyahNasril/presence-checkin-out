@@ -1,72 +1,39 @@
-import axiosInstance from "../../services/axiosInstance";
+import { mockAttendance, simulateDelay } from "../../data/mockData";
 
-// Fetch attendances data
 export const getAttendances = async (page = 0, size = 10, keyword = "") => {
-  try {
-    const response = await axiosInstance.get(
-      `/admin/attendance?page=${page}&pageSize=${size}&keyword=${keyword}`
-    );
+  await simulateDelay();
 
-    if (response.data && response.data.statusCode === 200) {
-      return response.data.data;
-    } else {
-      throw new Error("Failed to retrieve attendance");
-    }
-  } catch (error) {
-    console.error("Error fetching attendances:", error);
-    throw new Error(
-      error.response?.data?.message || "Error fetching attendances"
-    );
+  let filtered = mockAttendance;
+  if (keyword) {
+    const lowerKey = keyword.toLowerCase();
+    filtered = filtered.filter(a => a.employee_name.toLowerCase().includes(lowerKey));
   }
+
+  const start = page * size;
+  const end = start + size;
+
+  return {
+    statusCode: 200,
+    data: filtered.slice(start, end),
+    total_data: filtered.length,
+    total_page: Math.ceil(filtered.length / size),
+    page_size: size
+  };
 };
 
-// Import attendance data
 export const importAttendanceAPI = async (file) => {
-  if (!file) {
-    throw new Error("No file selected for import");
-  }
-
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const response = await axiosInstance.post(
-    "/admin/company/attendance/import",
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
-  );
-
-  return response.data;
+  await simulateDelay();
+  return { message: "Import successful", data: [] };
 };
 
-// Export attendance data
 export const exportAttendance = async () => {
-  try {
-    const response = await axiosInstance.get(
-      "/admin/company/attendance/export",
-      {
-        responseType: "blob", // Important for downloading files
-      }
-    );
-
-    downloadBlob(response.data, "attendance-list.xlsx");
-  } catch (error) {
-    console.error("Error exporting attendance:", error);
-    throw new Error(
-      error.response?.data?.message || "Error exporting attendance"
-    );
-  }
-};
-
-// Utility function to download blob as a file
-const downloadBlob = (data, filename) => {
-  const url = window.URL.createObjectURL(new Blob([data]));
+  await simulateDelay();
+  // Simulate download
+  const blob = new Blob([""], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.setAttribute("download", filename);
+  link.setAttribute("download", "attendance.xlsx");
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

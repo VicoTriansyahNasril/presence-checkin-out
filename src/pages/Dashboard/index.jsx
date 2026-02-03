@@ -37,19 +37,13 @@ export default function Dashboard() {
     loading,
     summary,
     attendanceOverview,
-    loadingAttendance,
   } = useSelector((state) => state.dashboard);
 
-  // State untuk setiap dropdown
   const [leaveTimePeriod, setLeaveTimePeriod] = useState("today");
   const [onTimePeriod, setOnTimePeriod] = useState("today");
   const [lateTimePeriod, setLateTimePeriod] = useState("today");
   const [absenceTimePeriod, setAbsenceTimePeriod] = useState("today");
-
-  // State untuk dropdown Attendance Overview chart
   const [attendanceTimePeriod, setAttendanceTimePeriod] = useState("this_week");
-
-  // State untuk dropdown Department Attendance Overview chart
   const [departmentTimePeriod, setDepartmentTimePeriod] = useState("today");
 
   const attendanceOverviewData = attendanceOverview
@@ -57,7 +51,7 @@ export default function Dashboard() {
     : [];
   const departmentAttendanceData = attendanceOverview
     ? attendanceOverview[departmentTimePeriod]
-        ?.department_attendance_overview || []
+      ?.department_attendance_overview || []
     : [];
 
   const calculatePercentages = (data) => {
@@ -78,7 +72,7 @@ export default function Dashboard() {
 
       const formatPercentage = (value) => {
         const percentage = (value / total) * 100;
-        return percentage % 1 === 0 ? percentage : percentage.toFixed(2);
+        return percentage % 1 === 0 ? percentage : parseFloat(percentage.toFixed(2));
       };
 
       return {
@@ -164,7 +158,7 @@ export default function Dashboard() {
       field: "departmentName",
       headerName: "Department",
       flex: 1.5,
-      renderCell: (params) => params.row.department.departmentName,
+      renderCell: (params) => params.row.department?.departmentName || "-",
     },
     {
       field: "employeeName",
@@ -203,6 +197,7 @@ export default function Dashboard() {
       headerName: "Check In Time",
       flex: 1,
       renderCell: (params) => {
+        if (!params.value) return "-";
         const checkInTime = new Date(params.value);
         const hours = checkInTime.getHours().toString().padStart(2, "0");
         const minutes = checkInTime.getMinutes().toString().padStart(2, "0");
@@ -213,11 +208,10 @@ export default function Dashboard() {
       field: "totalWorkingHours",
       headerName: "Work Hours",
       flex: 1,
-      renderCell: (params) => (params.value === "N/A" ? "-" : params.value),
+      renderCell: (params) => (params.value === "N/A" || !params.value ? "-" : params.value),
     },
   ];
 
-  // Jika loading data masih berlangsung, Suspense akan menangani loading.
   return (
     <Box sx={{ p: 2 }}>
       <Grid container spacing={2} sx={{ mb: 3 }}>
@@ -258,7 +252,7 @@ export default function Dashboard() {
         })}
       </Grid>
 
-      {/* Separate Card for Attendance Overview */}
+      {/* Attendance Overview Chart */}
       <Card variant="outlined" sx={{ mb: 4 }}>
         <CardContent>
           <Box
@@ -283,45 +277,22 @@ export default function Dashboard() {
 
           <BarChart
             series={[
-              {
-                data: attendanceOverviewPercentages.map((item) => item.on_time),
-                label: "On Time",
-                valueFormatter,
-              },
-              {
-                data: attendanceOverviewPercentages.map((item) => item.late),
-                label: "Late",
-                valueFormatter,
-              },
-              {
-                data: attendanceOverviewPercentages.map((item) => item.leave),
-                label: "Leave",
-                valueFormatter,
-              },
-              {
-                data: attendanceOverviewPercentages.map((item) => item.absent),
-                label: "Absent",
-                valueFormatter,
-              },
+              { data: attendanceOverviewPercentages.map((item) => item.on_time), label: "On Time", valueFormatter },
+              { data: attendanceOverviewPercentages.map((item) => item.late), label: "Late", valueFormatter },
+              { data: attendanceOverviewPercentages.map((item) => item.leave), label: "Leave", valueFormatter },
+              { data: attendanceOverviewPercentages.map((item) => item.absent), label: "Absent", valueFormatter },
             ]}
-            xAxis={[
-              {
-                data: attendanceOverviewPercentages.map(
-                  (item) => item.time_period
-                ),
-                scaleType: "band",
-              },
-            ]}
+            xAxis={[{ data: attendanceOverviewPercentages.map((item) => item.time_period), scaleType: "band" }]}
             yAxis={[{ scaleType: "linear", label: "Attendance (%)" }]}
             height={300}
             margin={{ top: 20, bottom: 40, left: 50, right: 20 }}
-            barPadding={0.3}
-            barWidth={30}
+          // Removed incorrect props: barPadding, barWidth from root
+          // If you need custom bar width/padding, use slotProps or layout config depending on version
           />
         </CardContent>
       </Card>
 
-      {/* Separate Card for Department Attendance Overview */}
+      {/* Department Attendance Overview Chart */}
       <Card variant="outlined">
         <CardContent>
           <Box
@@ -347,56 +318,20 @@ export default function Dashboard() {
 
           <BarChart
             series={[
-              {
-                data: departmentAttendancePercentages.map(
-                  (item) => item.on_time
-                ),
-                label: "On Time",
-                valueFormatter,
-              },
-              {
-                data: departmentAttendancePercentages.map((item) => item.late),
-                label: "Late",
-                valueFormatter,
-              },
-              {
-                data: departmentAttendancePercentages.map((item) => item.leave),
-                label: "Leave",
-                valueFormatter,
-              },
-              {
-                data: departmentAttendancePercentages.map(
-                  (item) => item.absent
-                ),
-                label: "Absent",
-                valueFormatter,
-              },
+              { data: departmentAttendancePercentages.map((item) => item.on_time), label: "On Time", valueFormatter },
+              { data: departmentAttendancePercentages.map((item) => item.late), label: "Late", valueFormatter },
+              { data: departmentAttendancePercentages.map((item) => item.leave), label: "Leave", valueFormatter },
+              { data: departmentAttendancePercentages.map((item) => item.absent), label: "Absent", valueFormatter },
             ]}
-            xAxis={[
-              {
-                data: departmentAttendancePercentages.map(
-                  (item) => item.department_name
-                ),
-                scaleType: "band",
-              },
-            ]}
-            yAxis={[
-              {
-                scaleType: "linear",
-                label: "Attendance (%)",
-                min: 0, // Set a minimum Y-axis value
-                max: 100, // Set a maximum Y-axis value
-              },
-            ]}
+            xAxis={[{ data: departmentAttendancePercentages.map((item) => item.department_name), scaleType: "band" }]}
+            yAxis={[{ scaleType: "linear", label: "Attendance (%)", min: 0, max: 100 }]}
             height={300}
             margin={{ top: 20, bottom: 40, left: 50, right: 20 }}
-            barPadding={0.3}
-            barWidth={30}
           />
         </CardContent>
       </Card>
 
-      {/* Card for Attendance Overview (Top 7 Employees) */}
+      {/* Top Employees Table */}
       <Card variant="outlined" sx={{ mt: 4 }}>
         <CardContent>
           <Box
@@ -407,7 +342,7 @@ export default function Dashboard() {
               mb: 2,
             }}
           >
-            <Typography variant="h5">Attendance Overview</Typography>
+            <Typography variant="h5">Top Employees Attendance</Typography>
             <Button
               variant="outlined"
               size="small"
@@ -429,10 +364,13 @@ export default function Dashboard() {
           </Box>
           <TableComponent
             columns={employeeColumns}
-            rows={topEmployees}
+            // Validasi: pastikan rows selalu array
+            rows={Array.isArray(topEmployees) ? topEmployees : []}
             searchValue={""}
             getRowId={(row) => row.idEmployee}
             paginationEnabled={false}
+            // Fix: Tambahkan rowCount meskipun pagination false untuk menghindari warning
+            rowCount={Array.isArray(topEmployees) ? topEmployees.length : 0}
           />
         </CardContent>
       </Card>

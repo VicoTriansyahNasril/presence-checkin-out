@@ -1,65 +1,86 @@
-// NOTE: Implementasi API telah dihapus untuk tujuan portofolio publik.
+import { mockCompanies, mockCompanyConfig, simulateDelay } from "../../data/mockData";
 
-const mockCompany = {
-  data: { company_name: "Showcase Company Inc.", founder: "John Doe", email: "contact@showcase.com" }
-};
+const currentCompany = mockCompanies[0];
 
 export const getCompanyProfile = async () => {
-  console.log("API Call: getCompanyProfile [Redacted]");
-  return Promise.resolve(mockCompany);
+  await simulateDelay();
+  return { data: currentCompany };
 };
 
 export const updateCompanyProfileAPI = async (companyData) => {
-  console.log("API Call: updateCompanyProfileAPI [Redacted]");
-  return Promise.resolve({ message: "Profile updated (mock)." });
+  await simulateDelay();
+  Object.assign(currentCompany, companyData);
+  return { message: "Profile updated (Mock)", data: currentCompany };
 };
 
 export const getCompanyConfig = async () => {
-  console.log("API Call: getCompanyConfig [Redacted]");
-  return Promise.resolve({ working_day_start: "Monday", working_day_end: "Friday" });
+  await simulateDelay();
+  return mockCompanyConfig;
 };
 
 export const updateCompanyConfig = async (configData) => {
-  console.log("API Call: updateCompanyConfig [Redacted]");
-  return Promise.resolve({ message: "Config updated (mock)." });
+  await simulateDelay();
+  Object.assign(mockCompanyConfig, configData);
+  return configData; // Return updated config part
 };
 
 export const updateCompanyLogo = async (file) => {
-  console.log("API Call: updateCompanyLogo [Redacted]");
-  return Promise.resolve({ message: "Logo updated (mock)." });
+  await simulateDelay();
+  return { message: "Logo updated (Mock)" };
 };
 
+// Superadmin functions
 export const fetchMasterCompanies = async () => {
-  console.log("API Call: fetchMasterCompanies [Redacted]");
-  return Promise.resolve([mockCompany.data]);
+  await simulateDelay();
+  return mockCompanies;
 };
 
 export const changeCompanysLogo = async (idCompany, formData) => {
-  console.log("API Call: changeCompanysLogo [Redacted]");
-  return Promise.resolve({ message: "Logo changed (mock)." });
+  await simulateDelay();
+  return { message: "Logo changed (Mock)" };
 };
 
 export const getDetailCompany = async (idCompany) => {
-  console.log("API Call: getDetailCompany [Redacted]");
-  return Promise.resolve(mockCompany.data);
+  await simulateDelay();
+  const company = mockCompanies.find(c => c.id_company === parseInt(idCompany));
+  return company || currentCompany;
 };
 
 export const insertNewCompany = async (data) => {
-  console.log("API Call: insertNewCompany [Redacted]");
-  return Promise.resolve({ message: "Company added (mock)." });
+  await simulateDelay();
+  const newCompany = { ...data, id_company: Math.floor(Math.random() * 1000) };
+  mockCompanies.push(newCompany);
+  return { message: "Company added (Mock)" };
 };
 
 export const getDataCompanies = async (params) => {
-  console.log("API Call: getDataCompanies [Redacted]");
-  return Promise.resolve({ data: [mockCompany.data], meta: { total: 1 } });
+  await simulateDelay();
+  const { pageNumber = 1, pageSize = 10 } = params;
+
+  // Simple pagination logic
+  const start = (pageNumber - 1) * pageSize;
+  const end = start + pageSize;
+
+  return {
+    data: mockCompanies.slice(start, end),
+    meta: { total: mockCompanies.length }
+  };
 };
 
-export const editDataCompany = async (idCompany, data) => {
-  console.log("API Call: editDataCompany [Redacted]");
-  return Promise.resolve({ message: "Company edited (mock)." });
+export const editDataCompany = async (id, data) => {
+  await simulateDelay();
+  const index = mockCompanies.findIndex(c => c.id_company === parseInt(id));
+  if (index !== -1) {
+    mockCompanies[index] = { ...mockCompanies[index], ...data };
+  }
+  return { message: "Company edited (Mock)" };
 };
 
-export const deleteDataCompany = async (idCompany, data) => {
-  console.log("API Call: deleteDataCompany [Redacted]");
-  return Promise.resolve({ message: "Company deleted (mock)." });
+export const deleteDataCompany = async (id, data) => {
+  await simulateDelay();
+  const index = mockCompanies.findIndex(c => c.id_company === parseInt(id));
+  if (index !== -1) {
+    mockCompanies.splice(index, 1);
+  }
+  return { message: "Company deleted (Mock)" };
 };

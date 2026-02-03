@@ -59,9 +59,11 @@ export const fetchEmployeeProfileByUsername = createAsyncThunk(
   "employees/fetchProfileByUsername",
   async (username, { rejectWithValue }) => {
     try {
-      const id_employee = await getEmployeeIdByUsername(username);
-      const profileResponse = await getEmployeeProfileById(id_employee);
+      // FIX: Ambil .data dari response ID
+      const idResponse = await getEmployeeIdByUsername(username);
+      const id_employee = idResponse.data;
 
+      const profileResponse = await getEmployeeProfileById(id_employee);
       return profileResponse;
     } catch (error) {
       console.error("Error in fetchEmployeeProfileByUsername thunk:", error);
@@ -77,7 +79,10 @@ export const fetchEmployeeProfessionalInfoByUsername = createAsyncThunk(
   "employees/fetchProfessionalInfoByUsername",
   async (username, { rejectWithValue }) => {
     try {
-      const id_employee = await getEmployeeIdByUsername(username);
+      // FIX: Ambil .data dari response ID
+      const idResponse = await getEmployeeIdByUsername(username);
+      const id_employee = idResponse.data;
+
       const professionalInfoResponse = await getEmployeeProfessionalInfo(
         id_employee
       );
@@ -99,7 +104,10 @@ export const fetchEmployeePersonalInfoByUsername = createAsyncThunk(
   "employees/fetchPersonalInfoByUsername",
   async (username, { rejectWithValue }) => {
     try {
-      const id_employee = await getEmployeeIdByUsername(username);
+      // FIX: Ambil .data dari response ID
+      const idResponse = await getEmployeeIdByUsername(username);
+      const id_employee = idResponse.data;
+
       const personalInfoResponse = await getEmployeePersonalInfo(id_employee);
       return personalInfoResponse;
     } catch (error) {
@@ -119,7 +127,10 @@ export const fetchEmployeeLeave = createAsyncThunk(
   "employees/fetchEmployeeLeave",
   async (username, { rejectWithValue }) => {
     try {
-      const id_employee = await getEmployeeIdByUsername(username);
+      // FIX: Ambil .data dari response ID
+      const idResponse = await getEmployeeIdByUsername(username);
+      const id_employee = idResponse.data;
+
       const leaveResponse = await getEmployeeLeave(id_employee);
       if (!leaveResponse?.length) return [];
       return leaveResponse;
@@ -242,7 +253,10 @@ export const fetchEmployeeAttendanceDetailsById = createAsyncThunk(
   "employees/fetchAttendanceDetailsById",
   async (username, { rejectWithValue }) => {
     try {
-      const id_employee = await getEmployeeIdByUsername(username);
+      // FIX: Ambil .data dari response ID
+      const idResponse = await getEmployeeIdByUsername(username);
+      const id_employee = idResponse.data;
+
       const attendanceResponse = await getEmployeeAttendanceDetails(
         id_employee
       );
@@ -307,9 +321,9 @@ const employeeSlice = createSlice({
       .addCase(fetchEmployeeProfileByUsername.rejected, fetchEmployeeProfileByUsernameRejected)
       .addCase(fetchEmployeeProfessionalInfoByUsername.pending, fetchEmployeeProfessionalInfoPending)
       .addCase(fetchEmployeeProfessionalInfoByUsername.fulfilled, fetchEmployeeProfessionalInfoFulfilled)
-      .addCase(fetchEmployeeProfessionalInfoByUsername.rejected,fetchEmployeeProfessionalInfoRejected)
-      .addCase(fetchEmployeePersonalInfoByUsername.pending,fetchEmployeePersonalInfoPending)
-      .addCase(fetchEmployeePersonalInfoByUsername.fulfilled,fetchEmployeePersonalInfoFulfilled)
+      .addCase(fetchEmployeeProfessionalInfoByUsername.rejected, fetchEmployeeProfessionalInfoRejected)
+      .addCase(fetchEmployeePersonalInfoByUsername.pending, fetchEmployeePersonalInfoPending)
+      .addCase(fetchEmployeePersonalInfoByUsername.fulfilled, fetchEmployeePersonalInfoFulfilled)
       .addCase(fetchEmployeePersonalInfoByUsername.rejected, fetchEmployeePersonalInfoRejected)
       .addCase(fetchEmployeeLeave.pending, fetchEmployeeLeavePending)
       .addCase(fetchEmployeeLeave.fulfilled, fetchEmployeeLeaveFulfilled)
@@ -317,8 +331,8 @@ const employeeSlice = createSlice({
       .addCase(editPersonalEmployee.pending, editPersonalEmployeePending)
       .addCase(editPersonalEmployee.fulfilled, editPersonalEmployeeFulfilled)
       .addCase(editPersonalEmployee.rejected, editPersonalEmployeeRejected)
-      .addCase(editProfessionalEmployee.pending,editProfessionalEmployeePending)
-      .addCase(editProfessionalEmployee.fulfilled,editProfessionalEmployeeFulfilled)
+      .addCase(editProfessionalEmployee.pending, editProfessionalEmployeePending)
+      .addCase(editProfessionalEmployee.fulfilled, editProfessionalEmployeeFulfilled)
       .addCase(editProfessionalEmployee.rejected, editProfessionalEmployeeRejected)
       .addCase(deleteEmployee.pending, deleteEmployeePending)
       .addCase(deleteEmployee.fulfilled, deleteEmployeeFulfilled)
@@ -326,7 +340,7 @@ const employeeSlice = createSlice({
       .addCase(editPassword.pending, editPasswordPending)
       .addCase(editPassword.fulfilled, editPasswordFulfilled)
       .addCase(editPassword.rejected, editPasswordRejected)
-      .addCase(fetchEmployeeAttendanceDetailsById.pending,fetchEmployeeAttendanceDetailsByIdPending)
+      .addCase(fetchEmployeeAttendanceDetailsById.pending, fetchEmployeeAttendanceDetailsByIdPending)
       .addCase(fetchEmployeeAttendanceDetailsById.fulfilled, fetchEmployeeAttendanceDetailsByIdFulfilled)
       .addCase(fetchEmployeeAttendanceDetailsById.rejected, fetchEmployeeAttendanceDetailsByIdRejected);
   },

@@ -11,7 +11,7 @@ import {
 } from "../utils/headerUtils";
 import { messages, breadcrumbsMessages } from "../messages/headerMessages";
 import { titleMap, subtitleMap } from "../constants/headerConstants";
-import appConstants from "../constants/appConstants"; 
+import appConstants from "../constants/appConstants";
 
 const Header = ({ isSuperadmin = false }) => {
   const location = useLocation();
@@ -25,9 +25,8 @@ const Header = ({ isSuperadmin = false }) => {
 
   const userName =
     userData && userData.data
-      ? `${userData.data.first_name || userData.data.name} ${
-          userData.data.last_name || ""
-        }`
+      ? `${userData.data.first_name || userData.data.name} ${userData.data.last_name || ""
+      }`
       : messages.loading;
 
   const userPicture = userData?.data?.profile_picture || "";
@@ -55,8 +54,10 @@ const Header = ({ isSuperadmin = false }) => {
 
   // Ambil data employee dari Redux
   const employee = useSelector((state) => state.employees.selectedEmployee);
-  const employeeName = employee
-    ? `${employee.data.first_name} ${employee.data.last_name}`
+
+  // PERBAIKAN: Menambahkan Optional Chaining (?.) dan default string kosong
+  const employeeName = employee && employee.data
+    ? `${employee.data.first_name || ""} ${employee.data.last_name || ""}`
     : messages.loading;
 
   // Pengecekan lokasi department, employee, admin, dan company detail
@@ -103,7 +104,7 @@ const Header = ({ isSuperadmin = false }) => {
       return (
         <Breadcrumbs
           aria-label="breadcrumb"
-          separator={<img src={DirectionRight} />}
+          separator={<img src={DirectionRight} alt="separator" />}
         >
           <Link
             to="/administrators"
@@ -111,7 +112,8 @@ const Header = ({ isSuperadmin = false }) => {
           >
             {breadcrumbsMessages.allAdministrators}
           </Link>
-          <Typography color={appConstants.COLOR_SECONDARY}>
+          {/* PERBAIKAN: Gunakan component="span" */}
+          <Typography component="span" color={appConstants.COLOR_SECONDARY}>
             {adminName}
           </Typography>
         </Breadcrumbs>
@@ -120,7 +122,7 @@ const Header = ({ isSuperadmin = false }) => {
       return (
         <Breadcrumbs
           aria-label="breadcrumb"
-          separator={<img src={DirectionRight} />}
+          separator={<img src={DirectionRight} alt="separator" />}
         >
           <Link
             to="/companies"
@@ -128,7 +130,7 @@ const Header = ({ isSuperadmin = false }) => {
           >
             {breadcrumbsMessages.allCompanies}
           </Link>
-          <Typography color={appConstants.COLOR_SECONDARY}>
+          <Typography component="span" color={appConstants.COLOR_SECONDARY}>
             {companyProfileName}
           </Typography>
         </Breadcrumbs>
@@ -137,7 +139,7 @@ const Header = ({ isSuperadmin = false }) => {
       return (
         <Breadcrumbs
           aria-label="breadcrumb"
-          separator={<img src={DirectionRight} />}
+          separator={<img src={DirectionRight} alt="separator" />}
         >
           <Link
             to="/departments"
@@ -145,7 +147,7 @@ const Header = ({ isSuperadmin = false }) => {
           >
             {breadcrumbsMessages.allDepartments}
           </Link>
-          <Typography color={appConstants.COLOR_SECONDARY}>
+          <Typography component="span" color={appConstants.COLOR_SECONDARY}>
             {departmentName}
           </Typography>
         </Breadcrumbs>
@@ -154,7 +156,7 @@ const Header = ({ isSuperadmin = false }) => {
       return (
         <Breadcrumbs
           aria-label="breadcrumb"
-          separator={<img src={DirectionRight} />}
+          separator={<img src={DirectionRight} alt="separator" />}
         >
           <Link
             to="/employees"
@@ -162,7 +164,7 @@ const Header = ({ isSuperadmin = false }) => {
           >
             {breadcrumbsMessages.allEmployees}
           </Link>
-          <Typography color={appConstants.COLOR_DARK}>
+          <Typography component="span" color={appConstants.COLOR_DARK}>
             {employeeName}
           </Typography>
         </Breadcrumbs>
@@ -186,12 +188,16 @@ const Header = ({ isSuperadmin = false }) => {
       }}
     >
       <Box>
+        {/* PERBAIKAN: Gunakan component="div" untuk Title */}
         <Typography
+          component="div"
           sx={{ fontWeight: "fontWeightMedium", fontSize: "fontSizeMedium" }}
         >
           {getTitle()}
         </Typography>
-        <Typography
+
+        {/* PERBAIKAN: Gunakan Box atau Div untuk pembungkus Subtitle/Breadcrumbs */}
+        <Box
           sx={{
             color: appConstants.COLOR_SECONDARY,
             fontWeight: "fontWeightLight",
@@ -199,7 +205,7 @@ const Header = ({ isSuperadmin = false }) => {
           }}
         >
           {getSubtitle()}
-        </Typography>
+        </Box>
       </Box>
 
       <ProfileCard

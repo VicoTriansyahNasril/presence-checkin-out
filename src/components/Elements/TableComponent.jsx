@@ -6,7 +6,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import Typography from "@mui/material/Typography";
 import { DataGrid } from "@mui/x-data-grid";
-import React, { useEffect, useState } from "react"; // Pastikan useState dan useEffect diimpor di sini
+import React, { useEffect, useState } from "react";
 
 const TableComponent = ({
   columns,
@@ -18,36 +18,24 @@ const TableComponent = ({
   getRowId,
   rowCount,
   paginationEnabled = true,
+  paginationMode = "server" // Default to server to avoid warnings
 }) => {
   const [filteredRows, setFilteredRows] = useState(rows);
   const classes = useStyles();
 
   useEffect(() => {
-    const handleSearchChange = () => {
-      if (searchValue) {
-        const filtered = rows.filter((row) =>
-          columns.some((col) => {
-            const cellValue = row[col.field] || ""; // Default to empty string
-            return String(cellValue)
-              .toLowerCase()
-              .includes(searchValue.toLowerCase());
-          })
-        );
-        setFilteredRows(filtered);
-      } else {
-        setFilteredRows(rows);
-      }
-    };
-
-    handleSearchChange();
-  }, [searchValue, rows, columns]);
+    // Client-side filtering simulation if needed, 
+    // but usually handled by service in this mock setup.
+    // Sync filteredRows with rows prop.
+    setFilteredRows(rows);
+  }, [searchValue, rows]);
 
   return (
     <Box sx={classes.boxTable}>
       <DataGrid
         rows={filteredRows}
         columns={columns}
-        paginationMode="server"
+        paginationMode={paginationMode} // Use the prop
         rowCount={rowCount}
         paginationModel={paginationModel}
         onPaginationModelChange={onPaginationModelChange}
@@ -73,6 +61,7 @@ const TableComponent = ({
   );
 };
 
+// ... (Sisa kode CustomPagination dan useStyles tetap sama)
 const CustomPagination = ({
   paginationModel = { pageSize: 10, page: 0 },
   onPaginationModelChange,
